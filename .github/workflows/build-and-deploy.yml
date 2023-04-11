@@ -1,0 +1,32 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: "Create env file"
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Build Go application
+        uses: actions/setup-go@v4
+        with:
+          go-version: "stable"
+      - run: go build -o ./build/api
+
+      - name: Copy to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_ADDRESS }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: ./build/api
+          target: ${{ secrets.SERVER_TARGET }}
