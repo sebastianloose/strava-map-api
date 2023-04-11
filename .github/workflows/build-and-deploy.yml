@@ -13,8 +13,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: "Create env file"
-        run: mkdir build
-        run: echo "${{ secrets.ENV_FILE }}" > ./build/.env
+        run: |
+          mkdir build
+          echo "${{ secrets.ENV_FILE }}" > ./build/.env
 
       - name: Build Go application
         uses: actions/setup-go@v4
