@@ -3,6 +3,7 @@ package oauth
 import (
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -53,7 +54,7 @@ func Redirect(c *gin.Context) {
 
 	cache.AddUser(user)
 
-	redirectUrl, _ := url.Parse("http://localhost:5176")
+	redirectUrl, _ := url.Parse(os.Getenv("APP_URL"))
 
 	query := redirectUrl.Query()
 	query.Add("token", token)
