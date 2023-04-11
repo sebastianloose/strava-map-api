@@ -30,6 +30,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
-          source: ./build/
+          source: build/
           strip_components: 1
           target: ${{ secrets.SERVER_TARGET }}
