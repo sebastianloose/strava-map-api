@@ -2,6 +2,8 @@ package oauth
 
 import (
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -49,9 +51,14 @@ func Redirect(c *gin.Context) {
 		return
 	}
 
-	cache.User = append(cache.User, user)
+	cache.AddUser(user)
 
-	c.JSON(http.StatusOK, gin.H{
-		"token": token,
-	})
+	redirectUrl, _ := url.Parse("http://localhost:5176")
+
+	query := redirectUrl.Query()
+	query.Add("token", token)
+	query.Add("expiresAt", strconv.Itoa(user.ExpiresAt))
+	redirectUrl.RawQuery = query.Encode()
+
+	c.Redirect(http.StatusTemporaryRedirect, redirectUrl.String())
 }

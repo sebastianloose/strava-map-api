@@ -29,7 +29,7 @@ func TokenExchange(userCode string) (UserToken, error) {
 	queryParams.Add("grant_type", "authorization_code")
 	tokenUrl.RawQuery = queryParams.Encode()
 
-	req, _ := http.NewRequest("POST", tokenUrl.String(), nil)
+	req, _ := http.NewRequest(http.MethodPost, tokenUrl.String(), nil)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -39,7 +39,7 @@ func TokenExchange(userCode string) (UserToken, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return UserToken{}, errors.New("strava token request not successful")
+		return UserToken{}, errors.New("strava token request failed")
 	}
 
 	var userToken UserToken

@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+
+	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 	"github.com/sebastianloose/strava-map-api/controller"
 	"github.com/sebastianloose/strava-map-api/controller/oauth"
-	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +23,14 @@ func init() {
 
 func main() {
 	router := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowHeaders = []string{"Access-Control-Allow-Headers", "Origin", "Accept", "authorization", "X-Requested-With", "Content-Type", "Access-Control-Request-Method", "Access-Control-Request-Headers"}
+	config.AllowCredentials = true
+
+	router.Use(cors.New(config))
+
 	router.GET("/oauth-redirect", oauth.Redirect)
 	router.GET("/oauth-login", oauth.Login)
 	router.GET("/activities", controller.GetActivities)
