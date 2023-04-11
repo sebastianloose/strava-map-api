@@ -13,7 +13,8 @@ jobs:
         uses: actions/checkout@v3
 
       - name: "Create env file"
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        run: mkdir build
+        run: echo "${{ secrets.ENV_FILE }}" > ./build/.env
 
       - name: Build Go application
         uses: actions/setup-go@v4
@@ -28,5 +29,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
-          source: ./build/api
+          source: ./build/
+          strip_components: 1
           target: ${{ secrets.SERVER_TARGET }}
