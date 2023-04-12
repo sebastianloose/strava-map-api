@@ -3,21 +3,21 @@ package strava
 import (
 	"encoding/json"
 	"errors"
-	"github.com/sebastianloose/strava-map-api/model"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/sebastianloose/strava-map-api/model"
 )
 
 func GetActivitiesForUser(user model.User) ([]model.Activity, error) {
-	tokenUrl, err := url.Parse("https://www.strava.com/api/v3/athlete/activities")
+	url, _ := url.Parse("https://www.strava.com/api/v3/athlete/activities")
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	query := url.Query()
+	query.Add("per_page", "200")
+	url.RawQuery = query.Encode()
 
-	req, _ := http.NewRequest(http.MethodGet, tokenUrl.String(), nil)
+	req, _ := http.NewRequest(http.MethodGet, url.String(), nil)
 	req.Header.Set("Authorization", "Bearer "+user.AccessToken)
 
 	client := &http.Client{}
