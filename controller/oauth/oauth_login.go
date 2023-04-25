@@ -1,7 +1,6 @@
 package oauth
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -10,9 +9,12 @@ import (
 )
 
 func Login(c *gin.Context) {
-	clientId := url.QueryEscape(os.Getenv("STRAVA_CLIENT_ID"))
-	redirectUrl := url.QueryEscape(os.Getenv("API_URL") + "/oauth-redirect")
+	stravaUrl, _ := url.Parse("https://www.strava.com/api/v3/oauth/authorize?response_type=code&scope=activity%3Aread_all")
 
-	stravaUrl := fmt.Sprintf("https://www.strava.com/api/v3/oauth/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=activity%%3Aread_all", clientId, redirectUrl)
-	c.Redirect(http.StatusTemporaryRedirect, stravaUrl)
+	query := stravaUrl.Query()
+	query.Add("client_id", os.Getenv("STRAVA_CLIENT_ID"))
+	query.Add("redirect_uri", os.Getenv("API_URL")+"/oauth-redirect")
+	stravaUrl.RawQuery = query.Encode()
+
+	c.Redirect(http.StatusTemporaryRedirect, stravaUrl.String())
 }
