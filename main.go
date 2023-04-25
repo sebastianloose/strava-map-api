@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sebastianloose/strava-map-api/controller"
 	"github.com/sebastianloose/strava-map-api/controller/oauth"
+	"github.com/sebastianloose/strava-map-api/service/cache"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +23,8 @@ func init() {
 }
 
 func main() {
+	go cache.StartCacheWorker()
+
 	router := gin.Default()
 
 	config := cors.DefaultConfig()
