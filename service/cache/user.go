@@ -2,7 +2,6 @@ package cache
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,12 +23,8 @@ func StartCacheWorker() {
 	for range time.Tick(time.Second * 1) {
 		for i := 0; i < len(User); i++ {
 			if User[i].ExpiresAt < int(time.Now().Unix()) {
-				fmt.Println(User[i])
-
 				User = append(User[:i], User[i+1:]...)
 				i--
-
-				fmt.Println(User)
 			}
 		}
 	}
