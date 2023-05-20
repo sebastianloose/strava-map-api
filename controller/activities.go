@@ -2,10 +2,11 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/sebastianloose/strava-map-api/model"
+	"github.com/sebastianloose/strava-map-api/model/strava_response"
 
-	"github.com/sebastianloose/strava-map-api/service/cache"
 	"github.com/sebastianloose/strava-map-api/service/strava"
 
 	"github.com/gin-gonic/gin"
@@ -13,24 +14,21 @@ import (
 )
 
 func GetActivities(c *gin.Context) {
-	token := auth.GetTokenFromRequest(c)
-	userId, err := auth.ExtractUserID(token)
+	user, err := auth.ExtractUser(c)
 
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid token")
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	user, err := cache.GetUserById(userId)
+	activities, err := strava.GetActivitiesOverviewForUser(user)
 
 	if err != nil {
-		c.String(http.StatusBadRequest, "User not found")
+		c.String(http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
-	activities, err := strava.GetActivitiesForUser(user)
-
-	var filteredActivities []model.Activity
+	var filteredActivities []strava_response.ActivitySummary
 
 	for _, a := range activities {
 		if a.Map.SummaryPolyline != "" {
@@ -38,10 +36,35 @@ func GetActivities(c *gin.Context) {
 		}
 	}
 
+	c.JSON(http.StatusOK, filteredActivities)
+}
+
+func GetActivity(c *gin.Context) {
+	user, err := auth.ExtractUser(c)
+
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Internal server error")
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, filteredActivities)
+	activityId, err := strconv.ParseInt(c.Param("activityId"), 10, 64)
+
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid activityId")
+		return
+	}
+
+	details, err := strava.GetActivityForUser(user, activityId)
+
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+
+	activity := model.ActivityDetailed{}
+
+	activity.ActivityId = activityId
+	activity.Points = details.Points.Data
+
+	c.JSON(http.StatusOK, activity)
 }

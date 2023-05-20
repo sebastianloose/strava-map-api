@@ -37,6 +37,7 @@ func main() {
 	router.GET("/oauth-redirect", oauth.Redirect)
 	router.GET("/oauth-login", oauth.Login)
 	router.GET("/activities", controller.GetActivities)
+	router.GET("/activity/:activityId", controller.GetActivity)
 	router.Run()
 
 	fmt.Println("Server listening on port 8080")

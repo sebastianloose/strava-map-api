@@ -1,6 +1,8 @@
-package model
+package strava_response
 
-import "time"
+import (
+	"time"
+)
 
 type Location [2]float64
 
@@ -9,7 +11,7 @@ type Map struct {
 	SummaryPolyline string `json:"summary_polyline"`
 }
 
-type Activity struct {
+type ActivitySummary struct {
 	Id                   int64     `json:"id"`
 	ExternalId           string    `json:"external_id"`
 	UploadId             int64     `json:"upload_id"`
@@ -51,4 +53,12 @@ type Activity struct {
 	MaximumHeartrate     float64   `json:"max_heartrate"`
 	Truncated            int       `json:"truncated"`
 	HasKudoed            bool      `json:"has_kudoed"`
+}
+
+type PointsList struct {
+	Data []Location `json:"data"`
+}
+
+type ActivityDetailed struct {
+	Points PointsList `json:"latlng"`
 }
