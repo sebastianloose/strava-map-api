@@ -8,14 +8,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/sebastianloose/strava-map-api/model/strava_response"
 )
 
-type UserToken struct {
-	AccessToken string `json:"access_token"`
-	ExpiresAt   int    `json:"expires_at"`
-}
-
-func TokenExchange(userCode string) (UserToken, error) {
+func TokenExchange(userCode string) (strava_response.Auth, error) {
 	tokenUrl, err := url.Parse("https://www.strava.com/oauth/token")
 
 	if err != nil {
@@ -35,20 +32,20 @@ func TokenExchange(userCode string) (UserToken, error) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return UserToken{}, err
+		return strava_response.Auth{}, err
 	}
 
 	if resp.StatusCode != 200 {
-		return UserToken{}, errors.New("strava token request failed")
+		return strava_response.Auth{}, errors.New("strava token request failed")
 	}
 
-	var userToken UserToken
+	var auth strava_response.Auth
 	body, _ := ioutil.ReadAll(resp.Body)
-	err = json.Unmarshal(body, &userToken)
+	err = json.Unmarshal(body, &auth)
 
 	if err != nil {
-		return UserToken{}, err
+		return strava_response.Auth{}, err
 	}
 
-	return userToken, nil
+	return auth, nil
 }

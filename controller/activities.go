@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/sebastianloose/strava-map-api/service/cache"
+
 	"github.com/sebastianloose/strava-map-api/model"
 
 	"github.com/sebastianloose/strava-map-api/service/strava"
@@ -33,8 +35,14 @@ func GetActivities(c *gin.Context) {
 	var activities []model.Activity
 
 	for _, a := range rawActivities {
-		if a.Map.SummaryPolyline == "" {
+		route := a.Map.SummaryPolyline
+		if route == "" {
 			continue
+		}
+
+		detailedRoute, exists := cache.GetDetailedActivity(a.Id, user)
+		if exists {
+			route = detailedRoute.PolylineRoute
 		}
 
 		activity := model.Activity{
@@ -46,8 +54,8 @@ func GetActivities(c *gin.Context) {
 			StartDate:          a.StartDate,
 			TotalElevationGain: a.TotalElevationGain,
 			Type:               a.Type,
-			PolylineRoute:      a.Map.SummaryPolyline,
-			IsDetailedRoute:    false,
+			PolylineRoute:      route,
+			IsDetailedRoute:    exists,
 			AverageSpeed:       a.AverageSpeed,
 			MaximumSpeed:       a.MaximumSpeed,
 			AverageHeartRate:   a.AverageHeartRate,
@@ -87,10 +95,13 @@ func GetActivity(c *gin.Context) {
 
 	route := string(polyline.EncodeCoords(details.Points.Data))
 
-	activity := model.ActivityDetailedRoute{}
+	activity := model.ActivityDetailedRoute{
+		Id:            activityId,
+		UserId:        user.UserId,
+		PolylineRoute: route,
+	}
 
-	activity.ActivityId = activityId
-	activity.PolylineRoute = route
+	cache.AddDetailedActivity(activity)
 
 	c.JSON(http.StatusOK, activity)
 }

@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Activity struct {
 	Id                 int64     `json:"id"`
@@ -23,6 +25,7 @@ type Activity struct {
 }
 
 type ActivityDetailedRoute struct {
-	ActivityId    int64  `json:"activityId"`
+	Id            int64  `json:"id"`
+	UserId        int64  `json:"userId"`
 	PolylineRoute string `json:"polylineRoute"`
 }

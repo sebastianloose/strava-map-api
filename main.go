@@ -23,7 +23,8 @@ func init() {
 }
 
 func main() {
-	go cache.StartCacheWorker()
+	go cache.StartUserCacheWorker()
+	go cache.StartActivityCacheWorker()
 
 	router := gin.Default()
 

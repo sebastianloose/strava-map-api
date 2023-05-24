@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/uuid"
+	"github.com/sebastianloose/strava-map-api/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -22,32 +22,32 @@ func GetTokenFromRequest(c *gin.Context) string {
 	return ""
 }
 
-func GenerateToken(userId uuid.UUID, expiresAt int) (string, error) {
+func GenerateToken(user model.User) (string, error) {
 	claims := jwt.MapClaims{}
 
-	claims["userId"] = userId
-	claims["expiresAt"] = expiresAt
+	claims["userId"] = (user.UserId)
+	claims["expiresAt"] = user.ExpiresAt
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	return token.SignedString(jwtKey)
 }
 
-func ExtractUserID(tokenString string) (uuid.UUID, error) {
+func ExtractUserID(tokenString string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return uuid.UUID{}, errors.New("unexpected signing method")
+			return -1, errors.New("unexpected signing method")
 		}
 		return jwtKey, nil
 	})
 
 	if err != nil {
-		return uuid.UUID{}, err
+		return -1, err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok || !token.Valid {
-		return uuid.UUID{}, errors.New("jwt invalid")
+		return -1, errors.New("jwt invalid")
 	}
 
-	userId, _ := uuid.Parse(claims["userId"].(string))
+	userId := int64(claims["userId"].(float64))
 	return userId, nil
 }

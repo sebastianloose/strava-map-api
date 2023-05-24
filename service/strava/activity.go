@@ -54,8 +54,6 @@ func GetActivity(user model.User, activityId int64) (strava_response.ActivityDet
 	query.Add("key_by_type", "true")
 	requestUrl.RawQuery = query.Encode()
 
-	fmt.Println(requestUrl.String())
-
 	req, _ := http.NewRequest(http.MethodGet, requestUrl.String(), nil)
 	req.Header.Set("Authorization", "Bearer "+user.AccessToken)
 

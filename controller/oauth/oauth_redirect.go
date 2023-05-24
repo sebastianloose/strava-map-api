@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/sebastianloose/strava-map-api/auth"
 	"github.com/sebastianloose/strava-map-api/model"
 	"github.com/sebastianloose/strava-map-api/service/cache"
@@ -34,16 +33,9 @@ func Redirect(c *gin.Context) {
 	var user model.User
 	user.AccessToken = userToken.AccessToken
 	user.ExpiresAt = userToken.ExpiresAt
-	user.UserId, err = uuid.NewRandom()
+	user.UserId = userToken.StravaAccount.Id
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "internal error",
-		})
-		return
-	}
-
-	token, err := auth.GenerateToken(user.UserId, user.ExpiresAt)
+	token, err := auth.GenerateToken(user)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
