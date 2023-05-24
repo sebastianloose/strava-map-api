@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sebastianloose/strava-map-api/model"
-	"github.com/sebastianloose/strava-map-api/model/strava_response"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/sebastianloose/strava-map-api/model"
+	"github.com/sebastianloose/strava-map-api/model/strava_response"
 )
 
 var baseUrl = "https://www.strava.com/api/v3"
 
-func GetActivitiesOverviewForUser(user model.User) ([]strava_response.ActivitySummary, error) {
+func GetActivitiesOverview(user model.User) ([]strava_response.ActivitySummary, error) {
 	requestUrl, _ := url.Parse(baseUrl + "/athlete/activities")
 
 	query := requestUrl.Query()
@@ -45,7 +46,7 @@ func GetActivitiesOverviewForUser(user model.User) ([]strava_response.ActivitySu
 	return activities, nil
 }
 
-func GetActivityForUser(user model.User, activityId int64) (strava_response.ActivityDetailed, error) {
+func GetActivity(user model.User, activityId int64) (strava_response.ActivityDetailed, error) {
 	requestUrl, _ := url.Parse(fmt.Sprintf("%s/activities/%d/streams", baseUrl, activityId))
 
 	query := requestUrl.Query()

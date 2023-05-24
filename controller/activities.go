@@ -1,16 +1,17 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/sebastianloose/strava-map-api/model"
-	"github.com/sebastianloose/strava-map-api/model/strava_response"
 
 	"github.com/sebastianloose/strava-map-api/service/strava"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sebastianloose/strava-map-api/auth"
+	"github.com/twpayne/go-polyline"
 )
 
 func GetActivities(c *gin.Context) {
@@ -21,22 +22,45 @@ func GetActivities(c *gin.Context) {
 		return
 	}
 
-	activities, err := strava.GetActivitiesOverviewForUser(user)
+	rawActivities, err := strava.GetActivitiesOverview(user)
 
 	if err != nil {
+		fmt.Println(err)
 		c.String(http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
-	var filteredActivities []strava_response.ActivitySummary
+	var activities []model.Activity
 
-	for _, a := range activities {
-		if a.Map.SummaryPolyline != "" {
-			filteredActivities = append(filteredActivities, a)
+	for _, a := range rawActivities {
+		if a.Map.SummaryPolyline == "" {
+			continue
 		}
+
+		activity := model.Activity{
+			Id:                 a.Id,
+			Name:               a.Name,
+			Distance:           a.Distance,
+			MovingTime:         a.MovingTime,
+			ElapsedTime:        a.ElapsedTime,
+			StartDate:          a.StartDate,
+			TotalElevationGain: a.TotalElevationGain,
+			Type:               a.Type,
+			PolylineRoute:      a.Map.SummaryPolyline,
+			IsDetailedRoute:    false,
+			AverageSpeed:       a.AverageSpeed,
+			MaximumSpeed:       a.MaximumSpeed,
+			AverageHeartRate:   a.AverageHeartRate,
+			MaximumHeartRate:   a.MaximumHeartRate,
+			AverageCadence:     a.AverageCadence,
+			AverageTemperature: a.AverageTemperature,
+			AverageWatts:       a.AveragePower,
+		}
+
+		activities = append(activities, activity)
 	}
 
-	c.JSON(http.StatusOK, filteredActivities)
+	c.JSON(http.StatusOK, activities)
 }
 
 func GetActivity(c *gin.Context) {
@@ -54,17 +78,19 @@ func GetActivity(c *gin.Context) {
 		return
 	}
 
-	details, err := strava.GetActivityForUser(user, activityId)
+	details, err := strava.GetActivity(user, activityId)
 
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
-	activity := model.ActivityDetailed{}
+	route := string(polyline.EncodeCoords(details.Points.Data))
+
+	activity := model.ActivityDetailedRoute{}
 
 	activity.ActivityId = activityId
-	activity.Points = details.Points.Data
+	activity.PolylineRoute = route
 
 	c.JSON(http.StatusOK, activity)
 }

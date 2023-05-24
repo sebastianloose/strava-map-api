@@ -8,28 +8,28 @@ import (
 	"github.com/sebastianloose/strava-map-api/model"
 )
 
-var User []model.User
+var users map[uuid.UUID]model.User
 
-func GetUserById(id uuid.UUID) (model.User, error) {
-	for _, u := range User {
-		if u.UserId == id {
-			return u, nil
-		}
+func AddUser(user model.User) {
+	users[user.UserId] = user
+}
+
+func GetUser(id uuid.UUID) (model.User, error) {
+	user, exists := users[id]
+	if exists {
+		return user, nil
 	}
 	return model.User{}, errors.New("user not found")
 }
 
 func StartCacheWorker() {
+	users = make(map[uuid.UUID]model.User)
+
 	for range time.Tick(time.Second * 1) {
-		for i := 0; i < len(User); i++ {
-			if User[i].ExpiresAt < int(time.Now().Unix()) {
-				User = append(User[:i], User[i+1:]...)
-				i--
+		for userId, user := range users {
+			if user.ExpiresAt < int(time.Now().Unix()) {
+				delete(users, userId)
 			}
 		}
 	}
-}
-
-func AddUser(user model.User) {
-	User = append(User, user)
 }
